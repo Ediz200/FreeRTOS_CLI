@@ -1,0 +1,51 @@
+# STM32CubeIDE build directories
+/Debug/
+/Release/
+/build/
+
+# Eclipse/STM32CubeIDE metadata
+/.settings/
+/.cproject
+.project
+
+# STM32CubeMX configuration (keep .ioc to allow regeneration)
+# If you do NOT want to commit it, uncomment below
+# *.ioc
+
+# Generated Makefiles and build artifacts
+/Makefile
+/*.mk
+
+# Compiled files
+*.o
+*.d
+*.elf
+*.bin
+*.hex
+*.map
+*.lst
+
+# Auto-generated logs, backups, temp files
+*.log
+*.bak
+*.tmp
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Ignore HAL and FreeRTOS auto-generated files (optional)
+/Drivers/STM32*/_hal_*/         # HAL subfolders
+/Middlewares/Third_Party/FreeRTOS/
+
+# CubeMX output folders (optional)
+/Core/Src/stm32*xx_it.c
+/Core/Inc/stm32*xx_it.h
+/Core/Src/syscalls.c
+/Core/Src/sysmem.c
+/Core/Src/system_stm32*.c
+
+# CMake cache (if used)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
