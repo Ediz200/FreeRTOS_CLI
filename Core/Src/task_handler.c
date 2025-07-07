@@ -46,10 +46,13 @@ void menu_task(void* parameters)
 			{
 				case 0:
 					curr_state = sLedEffect;
+					xTaskNotify(handle_led_task,0,eNoAction);
+					//portYIELD();
 					break;
 				case 1:
 					curr_state = sRtcMenu;
 					xTaskNotify(handle_rtc_task,0,eNoAction);
+					//portYIELD();
 					break;
 				case 2: /* Implement exit*/
 					break;
@@ -165,11 +168,11 @@ void led_task(void *param)
 						    "Enter your choice here : ";
 
 	while(1){
-		/*Wait for notification (Notify wait) */
+		/*Wait for notification from menu task (Notify wait) */
 		xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
 		/*Print LED menu */
 		xQueueSend(print_queue,(void*)&msg_led, portMAX_DELAY);
-		/*wait for LED command (Notify wait) */
+		/*wait for LED command notify from command_task (Notify wait) */
 		xTaskNotifyWait(0, 0, &cmd_addr, portMAX_DELAY);
 		cmd = (command_t*)cmd_addr;
 

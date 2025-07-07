@@ -145,7 +145,7 @@ int main(void)
   input_data_queue = xQueueCreate(10, sizeof(char));
   configASSERT(input_data_queue != NULL);
 
-  print_queue = xQueueCreate(20, sizeof(size_t)); //size of pointer
+  print_queue = xQueueCreate(10, sizeof(size_t)); //size of pointer
   configASSERT(print_queue != NULL);
 
   for(int i = 0; i < 4; i++)
@@ -154,7 +154,7 @@ int main(void)
   }
 
   /*Enable the UART*/
-  HAL_UART_Receive_IT(&huart2,(uint8_t*)&user_data, 1);
+  HAL_UART_Receive_IT(&huart2,&user_data, 1);
 
   vTaskStartScheduler();
   /* USER CODE END 2 */
@@ -375,8 +375,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	uint8_t dummy;
 
-	for(uint32_t i = 0 ; i < 4000 ; i++);
-
 	if(!xQueueIsQueueFullFromISR(input_data_queue))
 	{
 		xQueueSendFromISR(input_data_queue, (void*)&user_data, NULL);
@@ -400,7 +398,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		xTaskNotifyFromISR(handle_command_task, 0, eNoAction, NULL);
 	}
 	//Enable interrupt UART data byte reception again in IT mode */
-	HAL_UART_Receive_IT(&huart2, (uint8_t*)&user_data, 1);
+	HAL_UART_Receive_IT(&huart2, &user_data, 1);
 }
 
 
