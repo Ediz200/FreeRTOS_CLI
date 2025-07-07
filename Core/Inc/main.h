@@ -45,7 +45,7 @@ extern "C" {
 
 typedef struct
 {
-	char payload[10];
+	uint8_t payload[10];
 	uint32_t len;
 }command_t;
 

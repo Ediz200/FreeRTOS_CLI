@@ -145,17 +145,16 @@ int main(void)
   input_data_queue = xQueueCreate(10, sizeof(char));
   configASSERT(input_data_queue != NULL);
 
-
-  /*Enable the UART*/
-  HAL_UART_Receive_IT(&huart2, &user_data, 1);
-
-  print_queue = xQueueCreate(10, sizeof(size_t)); //size of pointer
+  print_queue = xQueueCreate(20, sizeof(size_t)); //size of pointer
   configASSERT(print_queue != NULL);
 
   for(int i = 0; i < 4; i++)
   {
 	 handle_led_timer[i] = xTimerCreate("led_timer", pdMS_TO_TICKS(500), pdTRUE, (void*)(i+1), led_effect_callback);
   }
+
+  /*Enable the UART*/
+  HAL_UART_Receive_IT(&huart2,(uint8_t*)&user_data, 1);
 
   vTaskStartScheduler();
   /* USER CODE END 2 */
@@ -374,7 +373,9 @@ void led_effect_callback(TimerHandle_t xTimer)
 /*Whenever a data byte is received this callback is executed*/
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	char dummy;
+	uint8_t dummy;
+
+	for(uint32_t i = 0 ; i < 4000 ; i++);
 
 	if(!xQueueIsQueueFullFromISR(input_data_queue))
 	{

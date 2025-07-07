@@ -9,7 +9,7 @@
 int extract_command(command_t *cmd);
 void process_command(command_t *cmd);
 
-const char *msg_inv = "///Invalid option///\n";
+const char *msg_inv = "\n///Invalid option///\n";
 
 void menu_task(void* parameters)
 {
@@ -20,17 +20,17 @@ void menu_task(void* parameters)
 	int option;
 
 
-	const char *msg_menu = 	"\n=====================\n"
-					 	"|        Menu       |\n"
-						"=====================\n"
-						"LED effect    ----> 0\n"
-						"Date and time ----> 1\n"
-						"Exit          ----> 2\n"
-						"Enter your choice here : ";
+	const char *msg_menu ="\n=====================\n"
+							"|        Menu       |\n"
+							"=====================\n"
+							"LED effect    ----> 0\n"
+							"Date and time ----> 1\n"
+							"Exit          ----> 2\n"
+							"Enter your choice here : ";
 
 	while(1){
 		/* Send the addres of the pointer to QueueSend API*/
-		xQueueSend(print_queue, &msg_menu, portMAX_DELAY);
+		xQueueSend(print_queue,(void*)&msg_menu, portMAX_DELAY);
 
 		/* Wait for menu commands, saves the pointer uint32_t cmd_addr*/
 		xTaskNotifyWait(0, 0, &cmd_addr, portMAX_DELAY);
@@ -46,7 +46,6 @@ void menu_task(void* parameters)
 			{
 				case 0:
 					curr_state = sLedEffect;
-					xTaskNotify(handle_led_task,0,eNoAction);
 					break;
 				case 1:
 					curr_state = sRtcMenu;
@@ -55,15 +54,18 @@ void menu_task(void* parameters)
 				case 2: /* Implement exit*/
 					break;
 				default:
-					xQueueSend(print_queue, &msg_inv, portMAX_DELAY);
+					xQueueSend(print_queue,(void*)&msg_inv, portMAX_DELAY);
 					continue;
 
 			}
 		} else {
 			// Invalid entry
-			xQueueSend(print_queue, &msg_inv, portMAX_DELAY);
+			xQueueSend(print_queue,(void*)&msg_inv, portMAX_DELAY);
 			continue;
 		}
+
+		//wait to run again when some other task notifies
+		xTaskNotifyWait(0,0,NULL,portMAX_DELAY);
 	}
 
 }
@@ -136,10 +138,12 @@ int extract_command(command_t *cmd)
 
 void print_task(void* parameters)
 {
-	uint32_t *msg;
+	uint32_t msg_addr;
+	uint8_t* msg;
 	while(1){
-		xQueueReceive(print_queue, &msg, portMAX_DELAY);
-		HAL_UART_Transmit(&huart2, (uint8_t*)msg, strlen((char*)msg), HAL_MAX_DELAY);
+		xQueueReceive(print_queue, &msg_addr, portMAX_DELAY);
+		msg = (uint8_t*)msg_addr;
+		HAL_UART_Transmit(&huart2, msg, strlen((char*)msg), HAL_MAX_DELAY);
 	}
 }
 
@@ -154,17 +158,17 @@ void led_task(void *param)
 {
 	uint32_t cmd_addr;
 	command_t *cmd;
-	const char* msg_led = "\n========================\n"
-						  "|      LED Effect      |\n"
-						  "========================\n"
-						  "(none,e1,e2,e3,e4)\n"
-						  "Enter your choice here : ";
+	const char* msg_led =   "=====================\n"
+							"|     LED Effect    |\n"
+							"=====================\n"
+						    "(none,e1,e2,e3,e4)   \n"
+						    "Enter your choice here : ";
 
 	while(1){
 		/*Wait for notification (Notify wait) */
 		xTaskNotifyWait(0, 0, NULL, portMAX_DELAY);
 		/*Print LED menu */
-		xQueueSend(print_queue, &msg_led, portMAX_DELAY);
+		xQueueSend(print_queue,(void*)&msg_led, portMAX_DELAY);
 		/*wait for LED command (Notify wait) */
 		xTaskNotifyWait(0, 0, &cmd_addr, portMAX_DELAY);
 		cmd = (command_t*)cmd_addr;
@@ -183,10 +187,11 @@ void led_task(void *param)
 				led_effect(4);
 			else
 				/*print invalid message */
-				xQueueSend(print_queue, &msg_inv, portMAX_DELAY);
-		}else
+				xQueueSend(print_queue, (void*)&msg_inv, portMAX_DELAY);
+		}else {
 			/*print invalid message */
-			xQueueSend(print_queue, &msg_inv, portMAX_DELAY);
+			xQueueSend(print_queue,(void*)&msg_inv, portMAX_DELAY);
+		}
 
 		/*update state variable */
 		curr_state = sMainMenu;
