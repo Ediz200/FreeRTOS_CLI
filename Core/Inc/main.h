@@ -37,6 +37,8 @@ extern "C" {
 #include "queue.h"
 #include <string.h>
 #include "timers.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 /* USER CODE END Includes */
 
@@ -55,9 +57,24 @@ typedef enum
 	sLedEffect,
 	sRtcMenu,
 	sRtcTimeConfig,
-	sRtcDataConfig,
+	sRtcDateConfig,
 	sRtcReport,
 }state_t;
+
+typedef enum
+{
+	uren = 0,
+	minutes,
+	secs,
+}time_unit;
+
+typedef enum
+{
+	day_config = 0,
+	month_config,
+	week_config,
+	year_config,
+}dates;
 
 typedef struct {
 	GPIO_TypeDef* port;
@@ -76,9 +93,12 @@ extern QueueHandle_t print_queue;
 extern state_t curr_state;
 
 extern UART_HandleTypeDef huart2;
+extern RTC_HandleTypeDef hrtc;
 
 //software timer handles
 extern TimerHandle_t handle_led_timer[4];
+extern TimerHandle_t rtc_timer;
+
 
 /* USER CODE END ET */
 
@@ -104,6 +124,13 @@ void led_effect1(void);
 void led_effect2(void);
 void led_effect3(void);
 void led_effect4(void);
+
+void show_time_date(void);
+void rtc_configure_time(RTC_TimeTypeDef *time);
+void show_time_date_itm(void);
+int validate_rtc_information(RTC_TimeTypeDef *time , RTC_DateTypeDef *date);
+void rtc_configure_date(RTC_DateTypeDef *date);
+
 
 /* USER CODE END EFP */
 

@@ -62,6 +62,7 @@ state_t curr_state = sMainMenu;
 uint8_t user_data;
 
 TimerHandle_t handle_led_timer[4];
+TimerHandle_t rtc_timer;
 
 /* USER CODE END PV */
 
@@ -78,6 +79,7 @@ void print_task(void* parameters);
 void rtc_task(void* parameters);
 void led_task(void* parameters);
 void led_effect_callback(TimerHandle_t xTimer);
+void rtc_timer_callback(TimerHandle_t xTimer);
 
 //extern void SEGGER_UART_init(U32 baud);
 /* USER CODE END PFP */
@@ -138,8 +140,8 @@ int main(void)
   xReturn = xTaskCreate(led_task, "led_task", 250, NULL, 2, &handle_led_task);
   configASSERT(xReturn == pdPASS);
 
-//  xReturn = xTaskCreate(rtc_task, "rtc_task", 250, NULL, 2, &handle_rtc_task);
-//  configASSERT(xReturn == pdPASS);
+  xReturn = xTaskCreate(rtc_task, "rtc_task", 250, NULL, 2, &handle_rtc_task);
+  configASSERT(xReturn == pdPASS);
 
 
   input_data_queue = xQueueCreate(10, sizeof(char));
@@ -152,6 +154,8 @@ int main(void)
   {
 	 handle_led_timer[i] = xTimerCreate("led_timer", pdMS_TO_TICKS(500), pdTRUE, (void*)(i+1), led_effect_callback);
   }
+
+  rtc_timer =  xTimerCreate("rtc_timer", pdMS_TO_TICKS(1000),pdTRUE, NULL, rtc_timer_callback);
 
   /*Enable the UART*/
   HAL_UART_Receive_IT(&huart2,&user_data, 1);
@@ -368,6 +372,11 @@ void led_effect_callback(TimerHandle_t xTimer)
 		led_effect4();
 		break;
 	}
+}
+
+void rtc_timer_callback(TimerHandle_t xTimer)
+{
+	show_time_date_itm();
 }
 
 /*Whenever a data byte is received this callback is executed*/
